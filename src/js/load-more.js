@@ -16,23 +16,42 @@ let input = elements.searchQuery.value;
 elements.butLoadMore.classList.replace('load-more', 'load-more-hidden');
 elements.searchForm.addEventListener('submit', hendlerSearch);
 
-function hendlerSearch(evt) {
+async function hendlerSearch(evt) {
   evt.preventDefault();
   elements.list.innerHTML = '';
   currentPage = 1;
   input = elements.searchQuery.value;
+
   fetchSearch(input, currentPage, perPage)
     .then(data => {
+      let total_Page = data.totalHits / perPage;
+
       if (data.hits.length > 0) {
         Notify.success(`Hooray! We found ${data.totalHits} images.`);
+        elements.list.insertAdjacentHTML('beforeend', createMarkup(data.hits));
+        new SimpleLightbox('.gallery a');
+        elements.butLoadMore.classList.replace('load-more-hidden', 'load-more');
+
+        if (currentPage < total_Page) {
+          elements.butLoadMore.classList.replace(
+            'load-more-hidden',
+            'load-more'
+          );
+        } else {
+          elements.butLoadMore.classList.replace(
+            'load-more',
+            'load-more-hidden'
+          );
+          Notify.info(
+            "We're sorry, but you've reached the end of search results."
+          );
+        }
       } else {
-        Notiflix.Notify.failure(
+        Notify.failure(
           'Sorry, there are no images matching your search query. Please try again.'
         );
+        elements.list.innerHTML = '';
       }
-      elements.list.insertAdjacentHTML('beforeend', createMarkup(data.hits));
-      new SimpleLightbox('.gallery a');
-      elements.butLoadMore.classList.replace('load-more-hidden', 'load-more');
     })
     .catch(onSubmitError);
 }

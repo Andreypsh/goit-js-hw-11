@@ -12,7 +12,6 @@ const elements = {
 };
 
 // const { height: cardHeight } = card.getBoundingClientRect();
-elements.up.classList.replace('up', 'up-hidden');
 let currentPage = 0;
 let perPage = 40;
 let input = elements.searchQuery.value;
@@ -23,7 +22,7 @@ const options = {
 
 const observer = new IntersectionObserver(onLoadMore, options);
 
-function hendlerSearch(evt) {
+async function hendlerSearch(evt) {
   evt.preventDefault();
   elements.list.innerHTML = '';
   currentPage = 1;
@@ -40,8 +39,13 @@ function hendlerSearch(evt) {
       }
       elements.list.insertAdjacentHTML('beforeend', createMarkup(data.hits));
       new SimpleLightbox('.gallery a');
+
       if (currentPage < total_Page) {
         observer.observe(elements.guard);
+      } else {
+        Notify.info(
+          "We're sorry, but you've reached the end of search results."
+        );
       }
     })
     .catch(onSubmitError);
@@ -58,19 +62,12 @@ function onLoadMore(entries) {
         let total_Page = data.totalHits / perPage;
         elements.list.insertAdjacentHTML('beforeend', createMarkup(data.hits));
         var lightbox = new SimpleLightbox('.gallery a');
-        elements.up.onclick = () => {
-          window.scrollTo({
-            top: 0,
-            behavior: 'smooth',
-          });
-        };
+
         if (currentPage >= total_Page) {
           observer.unobserve(elements.guard);
           Notify.info(
             "We're sorry, but you've reached the end of search results."
           );
-
-          elements.up.classList.replace('up-hidden', 'up');
         }
       });
     }
